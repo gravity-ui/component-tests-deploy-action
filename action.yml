@@ -1,0 +1,35 @@
+name: component-tests-deploy-action
+
+description: Deploys Component Tests report packages to S3
+
+inputs:
+  project:
+    description: ID of your project
+    required: true
+  github-token:
+    description: PAT of a GitHub user which maintains PR's deploy comment
+    required: true
+  s3-key-id:
+    description: S3 key ID
+    required: true
+  s3-secret-key:
+    description: S3 secret key
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: Deploy Component Tests Report
+    uses: gravity-ui/deploy-to-s3-action@v1
+    with:
+      project: ${{ inputs.project }}
+      src-path: playwright-report
+      bucket: playwright-reports
+      endpoint-url: https://storage.yandexcloud.net
+      preview-base-url: https://storage.yandexcloud.net/playwright-reports
+      preview-url-path: '{project}/pulls/{pr}/index.html'
+      comment-message: '🎭 [Component Tests Report]({url}) is ready.'
+      github-token: ${{ inputs.github-token }}
+      s3-key-id: ${{ inputs.s3-key-id }}
+      s3-secret-key: ${{ inputs.s3-secret-key }}
+      region: ru-central1
