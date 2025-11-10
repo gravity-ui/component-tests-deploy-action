@@ -19,17 +19,28 @@ inputs:
 runs:
   using: composite
   steps:
-  - name: Deploy Component Tests Report
-    uses: gravity-ui/deploy-to-s3-action@v1
+  - name: Download Artifacts
+    uses: actions/download-artifact@v4
     with:
-      project: ${{ inputs.project }}
+      github-token: ${{ inputs.github-token }}
+      run-id: ${{ github.event.workflow_run.id }}
+  - name: Extract PR Number
+    id: pr
+    run: echo "::set-output name=id::$(<pr/pr-id.txt)"
+    shell: bash
+  - name: Upload to S3
+    uses: gravity-ui/upload-to-s3-action@861491d60cfc29116e9ba4a53a34a857b9c5cb00
+    with:
       src-path: playwright-report
+      dest-path: /${{ inputs.project }}/pulls/${{ steps.pr.outputs.id }}/
       bucket: playwright-reports
       endpoint-url: https://storage.yandexcloud.net
-      preview-base-url: https://storage.yandexcloud.net/playwright-reports
-      preview-url-path: '{project}/pulls/{pr}/index.html'
-      comment-message: '🎭 [Component Tests Report]({url}) is ready.'
-      github-token: ${{ inputs.github-token }}
       s3-key-id: ${{ inputs.s3-key-id }}
       s3-secret-key: ${{ inputs.s3-secret-key }}
       region: ru-central1
+  - name: Create Comment
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      GITHUB_TOKEN: ${{ inputs.github-token }}
+      number: ${{ steps.pr.outputs.id }}
+      message: '🎭 [Component Tests Report](https://storage.yandexcloud.net/playwright-reports/${{ inputs.project }}/pulls/${{ steps.pr.outputs.id }}/index.html) is ready.'
