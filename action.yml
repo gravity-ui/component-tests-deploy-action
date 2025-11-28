@@ -42,5 +42,6 @@ runs:
     uses: marocchino/sticky-pull-request-comment@v2
     with:
       GITHUB_TOKEN: ${{ inputs.github-token }}
+      header: component-tests-report
       number: ${{ steps.pr.outputs.id }}
       message: '🎭 [Component Tests Report](https://storage.yandexcloud.net/playwright-reports/${{ inputs.project }}/pulls/${{ steps.pr.outputs.id }}/index.html) is ready.'
